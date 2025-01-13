@@ -16,7 +16,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: '8.0'
+        dotnet-version: '7.0'
 
     - name: Restore Dependencies
       run: dotnet restore
@@ -39,7 +39,7 @@ jobs:
 
     - name: Deploy to IIS
       run: |
-        $artifactPath = "$(System.DefaultWorkingDirectory)\build-package.zip"
+        $artifactPath = "$env:GITHUB_WORKSPACE\build-package.zip"
         $tempFolder = "D:\Publish\TempExtract"
         $deployFolder = "D:\Publish\SamplePipeline\package"
 
