@@ -40,23 +40,11 @@ jobs:
     - name: Deploy to IIS
       run: |
         $artifactPath = "$env:GITHUB_WORKSPACE\build-package.zip"
-        $tempFolder = "D:\Publish\TempExtract"
         $deployFolder = "D:\Publish\SamplePipeline\package"
 
-        if (!(Test-Path $tempFolder)) { New-Item -ItemType Directory -Path $tempFolder }
         if (!(Test-Path $deployFolder)) { New-Item -ItemType Directory -Path $deployFolder }
 
-        Expand-Archive -Path $artifactPath -DestinationPath $tempFolder -Force
-        $innerZipPath = Join-Path -Path $tempFolder -ChildPath "package.zip"
-
-        if (Test-Path $innerZipPath) {
-          Expand-Archive -Path $innerZipPath -DestinationPath $deployFolder -Force
-        } else {
-          Write-Host "package.zip not found at $innerZipPath"
-          exit 1
-        }
-
-        Remove-Item -Path $tempFolder -Recurse -Force
+        Expand-Archive -Path $artifactPath -DestinationPath $deployFolder -Force
 
         Write-Host "Deployment completed successfully to $deployFolder"
       shell: pwsh
