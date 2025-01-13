@@ -1,12 +1,12 @@
-name: Build and Package ASP.NET Web App
+name: Build, Package, and Deploy to IIS
 
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
-  build:
+  build-deploy:
     runs-on: windows-latest
 
     steps:
@@ -28,11 +28,25 @@ jobs:
       run: dotnet publish --configuration Release --output ./publish
 
     - name: Compress Output to ZIP
-      run: Compress-Archive -Path ./publish/* -DestinationPath ./package.zip
+      run: Compress-Archive -Path ./publish/* -DestinationPath ./build-package.zip
       shell: pwsh
 
-    - name: Upload Build Artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: build-package
-        path: ./package.zip
+    - name: Deploy to IIS
+      run: |
+        $artifactPath = "$(System.DefaultWorkingDirectory)\build-package.zip" # Path ZIP pertama
+        $tempFolder = "D:\Publish\TempExtract" # Folder sementara untuk ekstraksi
+        $deployFolder = "D:\Publish\SamplePipeline\package" # Folder target akhir
+
+        if (!(Test-Path $tempFolder)) { New-Item -ItemType Directory -Path $tempFolder }
+        if (!(Test-Path $deployFolder)) { New-Item -ItemType Directory -Path $deployFolder }
+
+        Expand-Archive -Path $artifactPath -DestinationPath $tempFolder -Force
+
+        $innerZipPath = Join-Path -Path $tempFolder -ChildPath "package.zip"
+
+        Expand-Archive -Path $innerZipPath -DestinationPath $deployFolder -Force
+
+        Remove-Item -Path $tempFolder -Recurse -Force
+
+        Write-Host "Deployment completed successfully to $deployFolder"
+      shell: pwsh
