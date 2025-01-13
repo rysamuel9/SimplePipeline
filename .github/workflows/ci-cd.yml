@@ -16,7 +16,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: '7.0'
+        dotnet-version: '8.0'
 
     - name: Restore Dependencies
       run: dotnet restore
@@ -48,7 +48,14 @@ jobs:
 
         Expand-Archive -Path $artifactPath -DestinationPath $tempFolder -Force
         $innerZipPath = Join-Path -Path $tempFolder -ChildPath "package.zip"
-        Expand-Archive -Path $innerZipPath -DestinationPath $deployFolder -Force
+
+        if (Test-Path $innerZipPath) {
+          Expand-Archive -Path $innerZipPath -DestinationPath $deployFolder -Force
+        } else {
+          Write-Host "package.zip not found at $innerZipPath"
+          exit 1
+        }
+
         Remove-Item -Path $tempFolder -Recurse -Force
 
         Write-Host "Deployment completed successfully to $deployFolder"
