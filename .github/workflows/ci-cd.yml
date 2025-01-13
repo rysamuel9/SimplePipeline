@@ -1,4 +1,4 @@
-name: Build, Package, and Deploy to IIS
+name: Build, Package, and Store ZIP for Later Deployment
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - master
 
 jobs:
-  build-deploy:
+  build-package:
     runs-on: windows-latest
 
     steps:
@@ -37,14 +37,14 @@ jobs:
         name: build-package
         path: ./build-package.zip
 
-    - name: Deploy to IIS
+    - name: Store ZIP in Temp Folder
       run: |
         $artifactPath = "$env:GITHUB_WORKSPACE\build-package.zip"
-        $deployFolder = "D:\Publish\SamplePipeline\package"
+        $tempFolder = "D:\Publish\TempExtract"
 
-        if (!(Test-Path $deployFolder)) { New-Item -ItemType Directory -Path $deployFolder }
+        if (!(Test-Path $tempFolder)) { New-Item -ItemType Directory -Path $tempFolder }
 
-        Expand-Archive -Path $artifactPath -DestinationPath $deployFolder -Force
+        Copy-Item -Path $artifactPath -Destination $tempFolder
 
-        Write-Host "Deployment completed successfully to $deployFolder"
+        Write-Host "ZIP package has been copied to $tempFolder for later deployment"
       shell: pwsh
