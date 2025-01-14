@@ -37,22 +37,15 @@ jobs:
         name: build-package
         path: ./build-package.zip
 
-    - name: Debug - List files and check for build-package.zip
-      run: |
-        Write-Host "Listing files in the working directory:"
-        Get-ChildItem -Path $env:GITHUB_WORKSPACE
-
-        Write-Host "Checking if build-package.zip exists:"
-        if (Test-Path "$env:GITHUB_WORKSPACE\build-package.zip") {
-          Write-Host "build-package.zip found"
-        } else {
-          Write-Host "build-package.zip not found"
-        }
-      shell: pwsh
+    - name: Download Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: build-package
+        path: ./downloaded-artifacts
 
     - name: Store ZIP in Temp Folder
       run: |
-        $artifactPath = "$env:GITHUB_WORKSPACE\build-package.zip"
+        $artifactPath = "$env:GITHUB_WORKSPACE\downloaded-artifacts\build-package.zip"
         $tempFolder = "D:\Publish\TempExtract\"
 
         Write-Host "Checking if temp folder exists at $tempFolder"
