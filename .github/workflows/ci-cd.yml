@@ -28,32 +28,34 @@ jobs:
       run: dotnet publish --configuration Release --output ./publish
 
     - name: Compress Output to ZIP
-      run: Compress-Archive -Path ./publish/* -DestinationPath ./build-package.zip
+      run: |
+        Compress-Archive -Path ./publish/* -DestinationPath ./build-package.zip
       shell: pwsh
 
-    - name: Upload build package as artifact
-      uses: actions/upload-artifact@v4
+    - name: Upload Build Package as Artifact
+      uses: actions/upload-artifact@v4.6.0
       with:
         name: build-package
         path: ./build-package.zip
+        if-no-files-found: error
+        overwrite: true
+        include-hidden-files: false
 
   deploy-package:
     runs-on: windows-latest
     needs: build-package
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
-
-    - name: Download Artifact
-      uses: actions/download-artifact@v4
+    - name: Download Build Artifact
+      uses: actions/download-artifact@v4.1.8
       with:
         name: build-package
         path: ./artifact-download
+        merge-multiple: false
 
-    - name: Verify Downloaded Artifact
+    - name: Verify Artifact After Download
       run: |
-        Write-Host "Listing downloaded files:"
+        Write-Host "Verifying downloaded artifact:"
         Get-ChildItem ./artifact-download
       shell: pwsh
 
@@ -62,7 +64,6 @@ jobs:
         $artifactPath = "$env:GITHUB_WORKSPACE\artifact-download\build-package.zip"
         $tempFolder = "D:\Publish\TempExtract\"
 
-        Write-Host "Checking if temp folder exists at $tempFolder"
         if (!(Test-Path $tempFolder)) { 
           Write-Host "Creating temp folder"
           New-Item -ItemType Directory -Path $tempFolder 
