@@ -1,4 +1,4 @@
-name: Build, Package, and Store ZIP for Later Deployment
+name: Build, Package, and Deploy
 
 on:
   push:
@@ -11,7 +11,7 @@ jobs:
 
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
@@ -37,15 +37,29 @@ jobs:
         name: build-package
         path: ./build-package.zip
 
+  deploy-package:
+    runs-on: windows-latest
+    needs: build-package
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
     - name: Download Artifact
       uses: actions/download-artifact@v4
       with:
         name: build-package
-        path: ./downloaded-artifacts
+        path: ./artifact-download
+
+    - name: Verify Downloaded Artifact
+      run: |
+        Write-Host "Listing downloaded files:"
+        Get-ChildItem ./artifact-download
+      shell: pwsh
 
     - name: Store ZIP in Temp Folder
       run: |
-        $artifactPath = "$env:GITHUB_WORKSPACE\downloaded-artifacts\build-package.zip"
+        $artifactPath = "$env:GITHUB_WORKSPACE\artifact-download\build-package.zip"
         $tempFolder = "D:\Publish\TempExtract\"
 
         Write-Host "Checking if temp folder exists at $tempFolder"
@@ -59,6 +73,4 @@ jobs:
 
         Write-Host "Verifying file in temp folder:"
         Get-ChildItem -Path $tempFolder
-
-        Write-Host "ZIP package has been copied to $tempFolder for later deployment"
       shell: pwsh
