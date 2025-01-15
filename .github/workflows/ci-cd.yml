@@ -32,6 +32,12 @@ jobs:
         Compress-Archive -Path ./publish/* -DestinationPath ./build-package.zip
       shell: pwsh
 
+    - name: Verify File Before Upload
+      run: |
+        Write-Host "Verifying that the ZIP file exists before upload"
+        Test-Path ./build-package.zip
+      shell: pwsh
+
     - name: Upload Build Package as Artifact
       uses: actions/upload-artifact@v4.6.0
       with:
@@ -55,8 +61,10 @@ jobs:
 
     - name: Verify Artifact After Download
       run: |
-        Write-Host "Verifying downloaded artifact:"
+        Write-Host "Verifying downloaded artifact..."
         Get-ChildItem ./artifact-download
+        Write-Host "Downloaded files:"
+        Get-ChildItem ./artifact-download -Recurse | Select-Object Name, Length
       shell: pwsh
 
     - name: Store ZIP in Temp Folder
